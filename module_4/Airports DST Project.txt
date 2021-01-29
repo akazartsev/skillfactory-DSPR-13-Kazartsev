@@ -1,0 +1,264 @@
+Question 4.1.1
+
+SELECT ap.city AS city,
+       count(ap.airport_code) AS airport
+FROM dst_project.airports AS ap
+GROUP BY 1
+HAVING count(ap.airport_code) > 1
+ORDER BY 2 DESC,
+         1
+
+Question 4.2.1
+
+SELECT count(DISTINCT f.status) AS status
+FROM dst_project.flights AS f
+
+Question 4.2.2
+
+SELECT count(DISTINCT f.flight_no) AS flight
+FROM dst_project.flights AS f
+WHERE f.status = 'Departed'
+
+Question 4.2.3
+
+SELECT count(DISTINCT s.seat_no) AS seat_num
+FROM dst_project.seats AS s
+WHERE s.aircraft_code = '773'
+
+Question 4.2.4
+
+SELECT count(DISTINCT f.flight_id)
+FROM dst_project.flights AS f
+WHERE f.status = 'Arrived'
+  AND f.actual_arrival BETWEEN '04-01-2017' AND '09-01-2017'
+
+Question 4.3.1
+
+SELECT count(DISTINCT f.flight_id)
+FROM dst_project.flights AS f
+WHERE f.status = 'Cancelled'
+Question 4.3.2
+
+SELECT count(a.aircraft_code)
+FROM dst_project.aircrafts AS a
+WHERE a.model like 'Boeing%'
+  OR a.model like 'Sukhoi%'
+  OR a.model like 'Airbus%'
+
+Question 4.3.3
+
+SELECT 'Asia' AS Geo,
+       count(DISTINCT ap.airport_code)
+FROM dst_project.airports AS ap
+WHERE ap.timezone like 'Asia%'
+UNION ALL
+SELECT 'Europe' AS Geo,
+       count(DISTINCT ap.airport_code)
+FROM dst_project.airports AS ap
+WHERE ap.timezone like 'Europe%'
+UNION ALL
+SELECT 'Australia' AS Geo,
+       count(DISTINCT ap.airport_code)
+FROM dst_project.airports AS ap
+WHERE ap.timezone like 'Australia%'
+
+
+Question 4.3.4
+SELECT f.flight_id
+FROM dst_project.flights AS f
+WHERE f.status = 'Arrived'
+ORDER BY (f.actual_arrival - f.scheduled_arrival) DESC
+LIMIT 1
+
+
+Question 4.4.1
+
+SELECT f.scheduled_departure
+FROM dst_project.flights AS f
+ORDER BY f.scheduled_departure
+LIMIT 1
+
+
+Question 4.4.2
+
+SELECT f.flight_id,
+       f.flight_no,
+       ((EXTRACT(MONTH
+                 FROM f.scheduled_arrival - f.scheduled_departure)*30*24*60) + (EXTRACT(DAY                                                                                        FROM f.scheduled_arrival - f.scheduled_departure)*24*60) + (EXTRACT(HOUR                                                                                                                                                            FROM f.scheduled_arrival - f.scheduled_departure)*60) + EXTRACT(MINUTE                                                                                                                                                                                                                           FROM f.scheduled_arrival - f.scheduled_departure)) AS flight_minutes
+FROM dst_project.flights AS f
+ORDER BY 3 DESC
+LIMIT 1
+
+
+Question 4.4.3
+
+SELECT f.departure_airport,
+       f.arrival_airport,
+       ((EXTRACT(MONTH
+                 FROM f.scheduled_arrival - f.scheduled_departure)*30*24*60) + (EXTRACT(DAY                                                                                        FROM f.scheduled_arrival - f.scheduled_departure)*24*60) + (EXTRACT(HOUR                                                                                                                                                            FROM f.scheduled_arrival - f.scheduled_departure)*60) + EXTRACT(MINUTE                                                                                                                                                                                                                            FROM f.scheduled_arrival - f.scheduled_departure)) AS flight_minutes
+FROM dst_project.flights AS f
+ORDER BY 3 DESC
+LIMIT 1
+
+
+Question 4.4.4
+
+SELECT round(avg((EXTRACT(MONTH
+                          FROM f.scheduled_arrival - f.scheduled_departure)*30*24*60) + (EXTRACT(DAY                                                                                                 FROM f.scheduled_arrival - f.scheduled_departure)*24*60) + (EXTRACT(HOUR                                                                                                                                                                     FROM f.scheduled_arrival - f.scheduled_departure)*60) + EXTRACT(MINUTE                                                                                                                                                                                                                                    FROM f.scheduled_arrival - f.scheduled_departure))) AS avg_flight_minutes
+FROM dst_project.flights AS f
+
+
+Question 4.5.1
+
+SELECT s.fare_conditions,
+       count(DISTINCT s.seat_no)
+FROM dst_project.seats AS s
+GROUP BY s.aircraft_code,
+         1
+HAVING aircraft_code = 'SU9'
+ORDER BY 2 DESC
+LIMIT 1
+
+
+Question 4.5.2
+
+SELECT b.total_amount
+FROM dst_project.bookings AS b
+ORDER BY 1
+LIMIT 1
+
+
+Question 4.5.3
+
+SELECT bp.seat_no
+FROM dst_project.tickets AS t
+JOIN dst_project.ticket_flights AS tf ON t.ticket_no = tf.ticket_no
+JOIN dst_project.boarding_passes AS bp ON (tf.flight_id = bp.flight_id
+                                           AND t.ticket_no = bp.ticket_no)
+WHERE t.passenger_id = '4313 788533'
+
+
+Question 5.1.1
+
+SELECT count(DISTINCT f.flight_id)
+FROM dst_project.flights AS f
+WHERE f.arrival_airport = 'AAQ'
+  AND EXTRACT(YEAR
+              FROM f.actual_arrival) = '2017'
+
+Question 5.1.2
+
+SELECT count(DISTINCT f.flight_id)
+FROM dst_project.flights AS f
+WHERE f.departure_airport = 'AAQ'
+  AND (EXTRACT(YEAR
+               FROM f.actual_departure) = '2017'
+       AND (EXTRACT(MONTH
+                    FROM f.actual_departure) in ('1',
+                                                 '2',
+                                                 '12')))
+
+Question 5.1.3
+
+SELECT count(DISTINCT f.flight_id)
+FROM dst_project.flights AS f
+WHERE f.departure_airport = 'AAQ'
+  AND f.status = 'Cancelled'
+
+
+Question 5.1.4
+
+SELECT count(DISTINCT f.flight_id)
+FROM dst_project.flights AS f
+WHERE f.departure_airport = 'AAQ'
+  AND f.arrival_airport != 'DME'
+  AND f.arrival_airport != 'SVO'
+  AND f.arrival_airport != 'VKO'
+  AND f.arrival_airport != 'BKA'
+
+
+Question 5.1.5
+
+SELECT ac.model,
+       count(DISTINCT s.seat_no)
+FROM dst_project.flights AS f
+JOIN dst_project.aircrafts AS ac ON f.aircraft_code = ac.aircraft_code
+JOIN dst_project.seats AS s ON f.aircraft_code = s.aircraft_code
+WHERE f.departure_airport = 'AAQ'
+GROUP BY ac.model
+ORDER BY 2 DESC
+LIMIT 1
+
+
+
+
+
+
+
+ANALYSIS
+
+SELECT f.flight_id,
+       f.flight_no,
+       f.arrival_airport,
+       f.aircraft_code,
+       f.status,
+       ((EXTRACT(MONTH
+                 FROM f.scheduled_arrival - f.scheduled_departure)*30*24*60) + (EXTRACT(DAY
+                                                                                        FROM f.scheduled_arrival - f.scheduled_departure)*24*60) + (EXTRACT(HOUR
+                                                                                                                                                            FROM f.scheduled_arrival - f.scheduled_departure)*60) + EXTRACT(MINUTE
+                                                                                                                                                                                                                            FROM f.scheduled_arrival - f.scheduled_departure)) AS schedule_flight_minutes,
+       ((EXTRACT(MONTH
+                 FROM f.actual_arrival - f.actual_departure)*30*24*60) + (EXTRACT(DAY
+                                                                                  FROM f.actual_arrival - f.actual_departure)*24*60) + (EXTRACT(HOUR
+                                                                                                                                                FROM f.actual_arrival - f.actual_departure)*60) + EXTRACT(MINUTE
+                                                                                                                                                                                                          FROM f.actual_arrival - f.actual_departure)) AS actual_flight_minutes,
+CASE
+           WHEN f.aircraft_code = '733' THEN (2600 * ((EXTRACT(MONTH
+                                                               FROM f.actual_arrival - f.actual_departure)*30*24*60) + (EXTRACT(DAY
+                                                                                                                                FROM f.actual_arrival - f.actual_departure)*24*60) + (EXTRACT(HOUR
+                                                                                                                                                                                              FROM f.actual_arrival - f.actual_departure)*60) + EXTRACT(MINUTE
+                                                                                                                                                                                                                                                        FROM f.actual_arrival - f.actual_departure))) / 60*41.754
+           WHEN f.aircraft_code = 'SU9' THEN (1700 * ((EXTRACT(MONTH
+                                                               FROM f.actual_arrival - f.actual_departure)*30*24*60) + (EXTRACT(DAY
+                                                                                                                                FROM f.actual_arrival - f.actual_departure)*24*60) + (EXTRACT(HOUR
+                                                                                                                                                                                              FROM f.actual_arrival - f.actual_departure)*60) + EXTRACT(MINUTE
+                                                                                                                                                                                                                                                        FROM f.actual_arrival - f.actual_departure)))/60*41.754
+           ELSE 0
+       END AS flight_total_fuel_cost,
+       count(DISTINCT st.seat_no) AS num_of_seats,
+       count(DISTINCT tkf.ticket_no) AS num_of_tickets_sold,
+       count(DISTINCT st.seat_no) - count(DISTINCT tkf.ticket_no) AS num_of_empty_seats
+FROM dst_project.flights AS f
+LEFT JOIN dst_project.ticket_flights AS tkf ON f.flight_id = tkf.flight_id
+LEFT JOIN dst_project.tickets AS tkts ON tkf.ticket_no = tkts.ticket_no
+LEFT JOIN dst_project.bookings AS bk ON tkts.book_ref = bk.book_ref
+LEFT JOIN dst_project.aircrafts AS ac ON f.aircraft_code = ac.aircraft_code
+LEFT JOIN dst_project.seats AS st ON ac.aircraft_code = st.aircraft_code,
+WHERE f.departure_airport = 'AAQ'
+  AND (date_trunc('month', f.scheduled_departure) in ('2017-01-01',
+                                                      '2017-02-01',
+                                                      '2017-12-01'))
+  AND f.status not in ('Cancelled')
+  AND bk.total_amount IS NOT NULL
+  AND st.fare_conditions = tkf.fare_conditions
+GROUP BY f.flight_id
+ORDER BY 1,
+         2,
+         3,
+         4
+
+
+
+SELECT tkf.flight_id,
+       tkf.fare_conditions,
+       count(DISTINCT ticket_no) num_of_tickets,
+       sum(amount) total_price
+FROM dst_project.flights AS f
+LEFT JOIN dst_project.ticket_flights AS tkf ON f.flight_id = tkf.flight_id
+WHERE f.departure_airport = 'AAQ'
+  AND (date_trunc('month', f.scheduled_departure) in ('2017-01-01',
+                                                      '2017-02-01',
+                                                      '2017-12-01'))
+  AND f.status not in ('Cancelled')
+GROUP BY 1,
+         2
